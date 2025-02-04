@@ -12,6 +12,7 @@ interface AuthState {
   isLoading: boolean;
   error: string | null;
   showCheckEmail: boolean;
+  showSignupConfirmation: boolean;
 }
 
 export default function LoginPage() {
@@ -23,6 +24,7 @@ export default function LoginPage() {
     isLoading: false,
     error: null,
     showCheckEmail: false,
+    showSignupConfirmation: false,
   });
 
   useEffect(() => {
@@ -42,7 +44,17 @@ export default function LoginPage() {
 
     try {
       const formData = new FormData(event.currentTarget);
-      await (actionType === "signup" ? signup(formData) : login(formData));
+      if (actionType === "signup") {
+        await signup(formData);
+        setAuthState({
+          isLoading: false,
+          error: null,
+          showCheckEmail: false,
+          showSignupConfirmation: true,
+        });
+      } else {
+        await login(formData);
+      }
     } catch (error) {
       setAuthState({
         isLoading: false,
@@ -50,6 +62,8 @@ export default function LoginPage() {
           error instanceof Error
             ? error.message
             : "An unexpected error occurred",
+        showCheckEmail: false,
+        showSignupConfirmation: false,
       });
     }
   };
@@ -74,7 +88,10 @@ export default function LoginPage() {
     } catch (error) {
       setAuthState({
         isLoading: false,
-        error: error instanceof Error ? error.message : "An unexpected error occurred",
+        error:
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred",
         showCheckEmail: false,
       });
     }
@@ -86,6 +103,12 @@ export default function LoginPage() {
         <Alert className="bg-green-50 border-green-200">
           <AlertDescription className="text-green-800">
             Check your email for a password reset link.
+          </AlertDescription>
+        </Alert>
+      ) : authState.showSignupConfirmation ? (
+        <Alert className="bg-green-50 border-green-200">
+          <AlertDescription className="text-green-800">
+            Please check your email to confirm your account.
           </AlertDescription>
         </Alert>
       ) : (
